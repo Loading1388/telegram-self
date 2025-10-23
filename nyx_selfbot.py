@@ -21,16 +21,17 @@ async def update_name():
         await asyncio.sleep(time_update_interval)
 
 # ---------------- COMMANDS --------------- #
-@client.on(events.NewMessage(pattern='/کیر'))
-async def کیر(event):
-    await event.reply('تو کونت جنده')
+@client.on(events.NewMessage(pattern='/ping'))
+async def ping(event):
+    await event.reply('Pong! ✅')
 
-@client.on(events.NewMessage(pattern='/های'))
-async def های(event):
-    await event.reply('بنال، انگلیسی هم زر نزن')
+@client.on(events.NewMessage(pattern='/vibe'))
+async def vibe(event):
+    emojis = ['😎','🔥','😏','🤤','🥵','💀','💖','👀']
+    await event.reply(random.choice(emojis))
 
-@client.on(events.NewMessage(pattern='/بگو (.+)'))
-async def بگو(event):
+@client.on(events.NewMessage(pattern='/say (.+)'))
+async def say(event):
     text = event.pattern_match.group(1)
     await event.reply(text)
 
@@ -40,12 +41,12 @@ async def afk(event):
     await client(UpdateProfileRequest(about=f"AFK: {reason}"))
     await event.reply(f"AFK status set: {reason}")
 
-@client.on(events.NewMessage(pattern='/ایدیش'))
-async def ایدیش(event):
+@client.on(events.NewMessage(pattern='/id'))
+async def id(event):
     await event.reply(f"Your user ID: {event.sender_id}\nChat ID: {event.chat_id}")
 
-@client.on(events.NewMessage(pattern='/هک کن (.+)'))
-async def هک کن(event):
+@client.on(events.NewMessage(pattern='/hack (.+)'))
+async def hack(event):
     user = event.pattern_match.group(1)
     msg = await event.reply(f"Hacking {user}...\n[░░░░░░░░░░] 0%")
     for i in range(10, 101, 10):
@@ -69,7 +70,7 @@ async def nuke(event):
         if msg.out:
             await msg.delete()
     await event.reply("Last 10 messages nuked! 💥")
-    
+
 bad_words = ["ننه جنده" ,"کیرم تو کص ننت" ,"حروم زاده", "گوه نخور" ]
 
 @client.on(events.NewMessage)
@@ -88,7 +89,4 @@ async def main():
     print("NYX Self-bot is online! 😈")
     await asyncio.gather(update_name(), client.run_until_disconnected())
 
-
 asyncio.run(main())
-
-
