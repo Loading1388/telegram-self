@@ -1,4 +1,4 @@
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, types
 from telethon.tl.functions.account import UpdateProfileRequest
 import asyncio
 from datetime import datetime
@@ -82,6 +82,31 @@ async def check_bad_words(event):
 
       await client.edit_permissions(sender.id, view_messages=False)
       await event.reply("FUCK YOU")
+
+#-------online status check---------- #
+last_check = 0
+cached_status = False
+
+async def is_session_online():
+    me = await client.get_me()
+    return isinstance(me.status,
+types.UserStatusOnline)
+
+async def get_online_status():
+    global last_check, cached_status
+    now = asyncio.get_event_loop().time()
+    if now - last_check > 10:
+        cached_status = await is_session_online()
+        last_check = now
+    return cached_status
+
+
+@client.on(events.NewMessage)
+async def auto_reply_private(event):
+    if event.is_private:
+        session_online = await get_online_status()
+        if not session_online:
+            await event.reply("HAMID IS OFFLINE")
 
 # ------------- START BOT ---------------- #
 async def main():
