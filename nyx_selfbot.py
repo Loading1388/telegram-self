@@ -21,15 +21,15 @@ async def update_name():
         await asyncio.sleep(time_update_interval)
 
 # ---------------- COMMANDS --------------- #
-@client.on(events.NewMessage(pattern='کیر'))
+@client.on(events.NewMessage(pattern='/کیر'))
 async def کیر(event):
     await event.reply('تو کونت جنده')
 
-@client.on(events.NewMessage(pattern='های'))
+@client.on(events.NewMessage(pattern='/های'))
 async def های(event):
     await event.reply('بنال، انگلیسی هم زر نزن')
 
-@client.on(events.NewMessage(pattern='بگو (.+)'))
+@client.on(events.NewMessage(pattern='/بگو (.+)'))
 async def بگو(event):
     text = event.pattern_match.group(1)
     await event.reply(text)
@@ -40,11 +40,11 @@ async def afk(event):
     await client(UpdateProfileRequest(about=f"AFK: {reason}"))
     await event.reply(f"AFK status set: {reason}")
 
-@client.on(events.NewMessage(pattern='ایدیش'))
+@client.on(events.NewMessage(pattern='/ایدیش'))
 async def ایدیش(event):
     await event.reply(f"Your user ID: {event.sender_id}\nChat ID: {event.chat_id}")
 
-@client.on(events.NewMessage(pattern='هک کن (.+)'))
+@client.on(events.NewMessage(pattern="/هک کن (.+)'))
 async def هک کن(event):
     user = event.pattern_match.group(1)
     msg = await event.reply(f"Hacking {user}...\n[░░░░░░░░░░] 0%")
@@ -53,7 +53,7 @@ async def هک کن(event):
         await msg.edit(f"Hacking {user}...\n[{'█'*i}{'░'*(10-i//10)}] {i}%")
     await msg.edit(f"Hacking {user} completed! 💀")
 
-@client.on(events.NewMessage(pattern='love (.+)'))
+@client.on(events.NewMessage(pattern='/love (.+)'))
 async def love(event):
     user = event.pattern_match.group(1)
     lines = [
@@ -90,3 +90,4 @@ async def main():
 
 
 asyncio.run(main())
+
