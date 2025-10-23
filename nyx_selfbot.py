@@ -21,17 +21,16 @@ async def update_name():
         await asyncio.sleep(time_update_interval)
 
 # ---------------- COMMANDS --------------- #
-@client.on(events.NewMessage(pattern='/ping'))
-async def ping(event):
-    await event.reply('Pong! ✅')
+@client.on(events.NewMessage(pattern='کیر'))
+async def کیر(event):
+    await event.reply('تو کونت جنده')
 
-@client.on(events.NewMessage(pattern='/vibe'))
-async def vibe(event):
-    emojis = ['😎','🔥','😏','🤤','🥵','💀','💖','👀']
-    await event.reply(random.choice(emojis))
+@client.on(events.NewMessage(pattern='های'))
+async def های(event):
+    await event.reply('بنال، انگلیسی هم زر نزن')
 
-@client.on(events.NewMessage(pattern='/say (.+)'))
-async def say(event):
+@client.on(events.NewMessage(pattern='بگو (.+)'))
+async def بگو(event):
     text = event.pattern_match.group(1)
     await event.reply(text)
 
@@ -41,12 +40,12 @@ async def afk(event):
     await client(UpdateProfileRequest(about=f"AFK: {reason}"))
     await event.reply(f"AFK status set: {reason}")
 
-@client.on(events.NewMessage(pattern='/id'))
-async def id(event):
+@client.on(events.NewMessage(pattern='ایدیش'))
+async def ایدیش(event):
     await event.reply(f"Your user ID: {event.sender_id}\nChat ID: {event.chat_id}")
 
-@client.on(events.NewMessage(pattern='/hack (.+)'))
-async def hack(event):
+@client.on(events.NewMessage(pattern='هک کن (.+)'))
+async def هک کن(event):
     user = event.pattern_match.group(1)
     msg = await event.reply(f"Hacking {user}...\n[░░░░░░░░░░] 0%")
     for i in range(10, 101, 10):
@@ -54,7 +53,7 @@ async def hack(event):
         await msg.edit(f"Hacking {user}...\n[{'█'*i}{'░'*(10-i//10)}] {i}%")
     await msg.edit(f"Hacking {user} completed! 💀")
 
-@client.on(events.NewMessage(pattern='/love (.+)'))
+@client.on(events.NewMessage(pattern='love (.+)'))
 async def love(event):
     user = event.pattern_match.group(1)
     lines = [
@@ -70,11 +69,24 @@ async def nuke(event):
         if msg.out:
             await msg.delete()
     await event.reply("Last 10 messages nuked! 💥")
+    
+bad_words = ["ننه جنده" ,"کیرم تو کص ننت" ,"حروم زاده", "گوه نخور" ]
+
+@client.on(events.NewMessage)
+async def check_bad_words(events):
+    message_texting = event.raw_text
+    sender = await event.get_sender()
+
+if any(word in message_text for word in bad_words):
+
+    await client.edit_permissions(sender.id, view_messages=False)
+    await event.reply("FUCK YOU")
 
 # ------------- START BOT ---------------- #
 async def main():
     await client.start()
     print("NYX Self-bot is online! 😈")
     await asyncio.gather(update_name(), client.run_until_disconnected())
+
 
 asyncio.run(main())
