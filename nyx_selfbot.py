@@ -44,7 +44,7 @@ async def afk(event):
 async def ایدیش(event):
     await event.reply(f"Your user ID: {event.sender_id}\nChat ID: {event.chat_id}")
 
-@client.on(events.NewMessage(pattern="/هک کن (.+)'))
+@client.on(events.NewMessage(pattern='/هک کن (.+)'))
 async def هک کن(event):
     user = event.pattern_match.group(1)
     msg = await event.reply(f"Hacking {user}...\n[░░░░░░░░░░] 0%")
@@ -90,4 +90,5 @@ async def main():
 
 
 asyncio.run(main())
+
 
