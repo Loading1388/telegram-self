@@ -71,18 +71,6 @@ async def nuke(event):
             await msg.delete()
     await event.reply("Last 10 messages nuked! 💥")
 
-bad_words = ["ننه جنده" ,"کیرم تو کص ننت" ,"حروم زاده", "گوه نخور" ]
-
-@client.on(events.NewMessage)
-async def check_bad_words(events):
-    message_texting = event.raw_text
-    sender = await event.get_sender()
-
-if any(word in message_text for word in bad_words):
-
-    await client.edit_permissions(sender.id, view_messages=False)
-    await event.reply("FUCK YOU")
-
 # ------------- START BOT ---------------- #
 async def main():
     await client.start()
