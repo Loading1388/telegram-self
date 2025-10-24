@@ -1,24 +1,44 @@
+import os
+import asyncio
+import random
+from datetime import datetime
 from telethon import TelegramClient, events, types
 from telethon.tl.functions.account import UpdateProfileRequest
-import asyncio
-from datetime import datetime
-import random
+from dotenv import load_dotenv
 
 # ---------------- CONFIG ---------------- #
-api_id = 24098304        # Get from https://my.telegram.org
-api_hash = 'f99d1945d37eeebbae901e3a702db708'  # Get from https://my.telegram.org
-client = TelegramClient('nyx_session', api_id, api_hash)
+load_dotenv()  # reads .env file if exists
+api_id = int(os.getenv("API_ID", "24098304"))
+api_hash = os.getenv("API_HASH", "f99d1945d37eeebbae901e3a702db708")
+client = TelegramClient("nyx_session", api_id, api_hash)
+
 static_name = "D:"
-time_update_interval = 60  # seconds
+time_update_interval = 30  # seconds
 # ---------------------------------------- #
+
+# Track who got the “offline” message already
+offline_replied_users = set()
 
 # ---------------- UTILS ----------------- #
 async def update_name():
+    """Keeps updating display name with time every 30s."""
     while True:
-        current_time = datetime.now().strftime("%H:%M")
-        new_name = f"{static_name} | {current_time}"
-        await client(UpdateProfileRequest(first_name=new_name))
+        try:
+            current_time = datetime.now().strftime("%H:%M")
+            new_name = f"{static_name} | {current_time}"
+            await client(UpdateProfileRequest(first_name=new_name))
+        except Exception as e:
+            print(f"[update_name] Error: {e}")
         await asyncio.sleep(time_update_interval)
+
+
+async def is_online():
+    """Check session online status."""
+    try:
+        me = await client.get_me()
+        return isinstance(me.status, types.UserStatusOnline)
+    except Exception:
+        return False
 
 # ---------------- COMMANDS --------------- #
 @client.on(events.NewMessage(pattern='/ping'))
@@ -64,49 +84,51 @@ async def love(event):
     ]
     await event.reply(random.choice(lines))
 
-@client.on(events.NewMessage(pattern='/nuke'))
+@client.on(events.NewMessage(pattern=r"/nuke"))
 async def nuke(event):
+    deleted = 0
     async for msg in client.iter_messages(event.chat_id, limit=10):
         if msg.out:
-            await msg.delete()
-    await event.reply("Last 10 messages nuked! 💥")
+            try:
+                await msg.delete()
+                deleted += 1
+                await asyncio.sleep(0.1)
+            except Exception:
+                pass
+    await event.reply(f"Nuked {deleted} messages 💥")
 
-bad_words = ["ننه جنده" ,"کیرم تو کص ننت" ,"حروم زاده", "گوه نخور" ]
+#----------- BAD WORDS FILTER--------#
+
+bad_words = ["ننه جنده" ,"کیرم تو کص ننت" ,"حروم زاده", "گوه نخور"]
 
 @client.on(events.NewMessage)
-async def check_bad_words(event):
-    message_text = event.raw_text
-    sender = await event.get_sender()
+async def badword_filter(event):
+    if not (event.is_group or event.is_channel):
+        return
+    if any(bad in event.raw_text for bad in bad_words):
+        try:
+            await event.reply("FUCK YOU 😤")
+            await asyncio.sleep(1)
+            await client.edit_permissions(event.chat_id, event.sender_id, view_messages=False)
+        except Exception as e:
+            print(f"[badword_filter] Error: {e}")
 
-    if any(word in message_text for word in bad_words):
-
-      await client.edit_permissions(sender.id, view_messages=False)
-      await event.reply("FUCK YOU")
-
-#-------online status check---------- #
-last_check = 0
-cached_status = False
-
-async def is_session_online():
-    me = await client.get_me()
-    return isinstance(me.status,
-types.UserStatusOnline)
-
-async def get_online_status():
-    global last_check, cached_status
-    now = asyncio.get_event_loop().time()
-    if now - last_check > 10:
-        cached_status = await is_session_online()
-        last_check = now
-    return cached_status
-
-
+#--------AUTO OFFLINE REPLY-------------#
 @client.on(events.NewMessage)
 async def auto_reply_private(event):
-    if event.is_private:
-        session_online = await get_online_status()
-        if not session_online:
+    if not event.is_private:
+        return
+    user_id = event.sender_id
+    try:
+        online = await is_online()
+        if not online and user_id not in offline_replied_users:
             await event.reply("HAMID IS OFFLINE")
+            offline_replied_users.add(user_id)
+        elif online and user_id in offline_replied_users:
+            # Reset when you come back online
+            offline_replied_users.remove(user_id)
+    except Exception as e:
+        print(f"[auto_reply_private] Error: {e}")
 
 # ------------- START BOT ---------------- #
 async def main():
